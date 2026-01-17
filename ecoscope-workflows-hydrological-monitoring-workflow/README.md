@@ -5,8 +5,8 @@
 
 ```yaml
 # fingerprint:
-artifacts_sha256_basic: 968912e7318274013d591c9156ee146106c76d40d938391efed251130a982156
-artifacts_sha256_strict: 3e9e2307db9cd18af65242b41013ce168a48b66e32f991b9cd86842c2c644468
+artifacts_sha256_basic: aa57dd36dbfc3dc5deef0e8af822ddc0c0e658a00d68bc06875cd4646c6e7ba2
+artifacts_sha256_strict: f3a942c435b560d45e79c787ed641fc803f6525d0dd05f24fbbd405c4ad66553
 installed_requirements:
 - channel: https://repo.prefix.dev/ecoscope-workflows/
   name: ecoscope-workflows-core
@@ -18,10 +18,10 @@ installed_requirements:
   name: ecoscope-workflows-ext-custom
   version: {version: ==0.0.14.dev0+g3f451d57d.d20260110}
 params_sha256: b3854198dc8ecbbaef95d46eb72e72ec40dfac8a7ead92ede2aeb3e671543d5c
-spec_sha256: 6a8b34f5a7895179235df7b94922b59515e5d37c9d384f369b78285c1c84244d
+spec_sha256: d7f2aa2596fa99a2f4f85ffdc3c9e250c27531ee0b676a33071b59b169adb364
 
 ```
 
-# ecoscope-workflows-river-health-workflow
+# ecoscope-workflows-hydrological-monitoring-workflow
 
 ![](graph.png)

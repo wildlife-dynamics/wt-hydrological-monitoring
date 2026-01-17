@@ -33,7 +33,7 @@ from .metadata import (
 )
 from .params import Params
 
-RELEASE_NAME = "ecoscope-workflows-river-health-workflow"
+RELEASE_NAME = "ecoscope-workflows-hydrological-monitoring-workflow"
 
 
 @click.group()

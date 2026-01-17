@@ -1,4 +1,4 @@
-id: river_health
+id: hydrological_monitoring
 requirements:
   - name: ecoscope-workflows-core
     version: ">=0.19.4, <0.20.0"

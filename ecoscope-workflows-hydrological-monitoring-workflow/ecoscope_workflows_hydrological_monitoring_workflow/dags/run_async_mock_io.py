@@ -19,7 +19,6 @@ from ecoscope_workflows_core.tasks.filter import (
     get_timezone_from_time_range as get_timezone_from_time_range,
 )
 from ecoscope_workflows_core.tasks.filter import set_time_range as set_time_range
-from ecoscope_workflows_core.tasks.groupby import set_groupers as set_groupers
 from ecoscope_workflows_core.tasks.io import set_er_connection as set_er_connection
 from ecoscope_workflows_core.testing import create_task_magicmock  # 🧪
 
@@ -27,6 +26,7 @@ get_subjectgroup_observations = create_task_magicmock(  # 🧪
     anchor="ecoscope_workflows_ext_ecoscope.tasks.io",  # 🧪
     func_name="get_subjectgroup_observations",  # 🧪
 )  # 🧪
+from ecoscope_workflows_core.tasks.groupby import set_groupers as set_groupers
 from ecoscope_workflows_core.tasks.groupby import split_groups as split_groups
 from ecoscope_workflows_core.tasks.io import persist_text as persist_text
 from ecoscope_workflows_core.tasks.results import (
@@ -75,9 +75,9 @@ def main(params: Params):
         "workflow_details": [],
         "time_range": [],
         "get_timezone": ["time_range"],
-        "groupers": [],
         "er_client_name": [],
         "subject_obs_stevens": ["er_client_name", "time_range"],
+        "groupers": [],
         "drop_extra_prefix_stevens": ["subject_obs_stevens"],
         "process_columns_stevens": ["drop_extra_prefix_stevens"],
         "convert_to_user_timezone_stevens": ["process_columns_stevens", "get_timezone"],
@@ -141,15 +141,6 @@ def main(params: Params):
             | (params_dict.get("get_timezone") or {}),
             method="call",
         ),
-        "groupers": Node(
-            async_task=set_groupers.validate()
-            .set_task_instance_id("groupers")
-            .handle_errors()
-            .with_tracing()
-            .set_executor("lithops"),
-            partial=(params_dict.get("groupers") or {}),
-            method="call",
-        ),
         "er_client_name": Node(
             async_task=set_er_connection.validate()
             .set_task_instance_id("er_client_name")
@@ -171,9 +162,17 @@ def main(params: Params):
                 "raise_on_empty": True,
                 "include_details": True,
                 "include_subjectsource_details": True,
-                "subject_group_name": "Stevens Connect",
             }
             | (params_dict.get("subject_obs_stevens") or {}),
+            method="call",
+        ),
+        "groupers": Node(
+            async_task=set_groupers.validate()
+            .set_task_instance_id("groupers")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial=(params_dict.get("groupers") or {}),
             method="call",
         ),
         "drop_extra_prefix_stevens": Node(
@@ -242,6 +241,7 @@ def main(params: Params):
                 "df": DependsOn("convert_to_user_timezone_stevens"),
                 "column": "observation_details",
                 "skip_if_not_exists": False,
+                "sort_columns": True,
             }
             | (params_dict.get("normalize_obs_details_stevens") or {}),
             method="call",
@@ -312,6 +312,7 @@ def main(params: Params):
             .set_executor("lithops"),
             partial={
                 "root_path": os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+                "sanitize": True,
             }
             | (params_dict.get("persist_stevens_observations") or {}),
             method="mapvalues",
@@ -385,6 +386,7 @@ def main(params: Params):
                 "filetypes": [
                     "csv",
                 ],
+                "sanitize": True,
             }
             | (params_dict.get("persist_daily_summary_stevens") or {}),
             method="mapvalues",

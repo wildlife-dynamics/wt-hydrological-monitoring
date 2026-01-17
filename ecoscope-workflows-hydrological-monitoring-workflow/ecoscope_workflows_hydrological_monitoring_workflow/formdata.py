@@ -18,12 +18,14 @@ class WorkflowDetails(BaseModel):
     description: Optional[str] = Field("", title="Workflow Description")
 
 
-class NormalizeObsDetailsStevens(BaseModel):
+class SubjectObsStevens(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    sort_columns: Optional[bool] = Field(
-        True, description="Sort new columns alphabetically.", title="Sort Columns"
+    subject_group_name: str = Field(
+        ...,
+        description="⚠️ The use of a group with mixed subtypes could lead to unexpected results",
+        title="Subject Group Name",
     )
 
 
@@ -41,14 +43,9 @@ class PersistStevensObservations(BaseModel):
         ["csv"], description="The output format", title="Filetypes"
     )
     filename_prefix: Optional[str] = Field(
-        None,
+        "observations",
         description="            Optional filename prefix to persist text to within the `root_path`.\n            We will always add a suffix based on the dataframe content hash to avoid duplicates.\n            ",
         title="Filename Prefix",
-    )
-    sanitize: Optional[bool] = Field(
-        False,
-        description="Whether to sanitize the dataframe for Arrow compatibility before persisting, recommended when including event or observation details",
-        title="Sanitize",
     )
 
 
@@ -57,14 +54,9 @@ class PersistDailySummaryStevens(BaseModel):
         extra="forbid",
     )
     filename_prefix: Optional[str] = Field(
-        None,
+        "daily_summary",
         description="            Optional filename prefix to persist text to within the `root_path`.\n            We will always add a suffix based on the dataframe content hash to avoid duplicates.\n            ",
         title="Filename Prefix",
-    )
-    sanitize: Optional[bool] = Field(
-        False,
-        description="Whether to sanitize the dataframe for Arrow compatibility before persisting, recommended when including event or observation details",
-        title="Sanitize",
     )
 
 
@@ -75,16 +67,16 @@ class TimezoneInfo(BaseModel):
     utc: str = Field(..., title="Utc")
 
 
+class EarthRangerConnection(BaseModel):
+    name: str = Field(..., title="Data Source")
+
+
 class TemporalGrouper(RootModel[str]):
     root: str = Field(..., title="Time")
 
 
 class ValueGrouper(RootModel[str]):
     root: str = Field(..., title="Category")
-
-
-class EarthRangerConnection(BaseModel):
-    name: str = Field(..., title="Data Source")
 
 
 class TimeRange(BaseModel):
@@ -96,6 +88,15 @@ class TimeRange(BaseModel):
     timezone: Optional[TimezoneInfo] = Field(None, title="Timezone")
 
 
+class ErClientName(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    data_source: EarthRangerConnection = Field(
+        ..., description="Select one of your configured data sources.", title=""
+    )
+
+
 class Groupers(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -104,15 +105,6 @@ class Groupers(BaseModel):
         None,
         description="            Specify how the data should be grouped to create the views for your dashboard or persisted data.\n            This field is optional; if left blank, all the data will appear in a single view.\n            ",
         title=" ",
-    )
-
-
-class ErClientName(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    data_source: EarthRangerConnection = Field(
-        ..., description="Select one of your configured data sources.", title=""
     )
 
 
@@ -128,13 +120,13 @@ class FormData(BaseModel):
     time_range: Optional[TimeRange] = Field(
         None, description="Choose the period of time to analyze.", title="Time Range"
     )
-    groupers: Optional[Groupers] = Field(None, title="Set Groupers for Analysis")
     er_client_name: Optional[ErClientName] = Field(
         None, title="Select EarthRanger Data Source"
     )
-    normalize_obs_details_stevens: Optional[NormalizeObsDetailsStevens] = Field(
-        None, title="Normalize Observation Details"
+    subject_obs_stevens: Optional[SubjectObsStevens] = Field(
+        None, title="Get Subject Group Observations from EarthRanger"
     )
+    groupers: Optional[Groupers] = Field(None, title="Set Groupers for Analysis")
     persist_stevens_observations: Optional[PersistStevensObservations] = Field(
         None, title="Persist Observations from Stevens Connect"
     )

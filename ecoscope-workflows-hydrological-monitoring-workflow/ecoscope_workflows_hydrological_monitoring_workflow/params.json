@@ -53,6 +53,36 @@
       "description": "Choose the period of time to analyze.",
       "title": "Time Range"
     },
+    "er_client_name": {
+      "additionalProperties": false,
+      "properties": {
+        "data_source": {
+          "$ref": "#/$defs/EarthRangerConnection",
+          "title": "",
+          "description": "Select one of your configured data sources."
+        }
+      },
+      "required": [
+        "data_source"
+      ],
+      "type": "object",
+      "title": "Select EarthRanger Data Source"
+    },
+    "subject_obs_stevens": {
+      "additionalProperties": false,
+      "properties": {
+        "subject_group_name": {
+          "title": "Subject Group Name",
+          "type": "string",
+          "description": "\u26a0\ufe0f The use of a group with mixed subtypes could lead to unexpected results"
+        }
+      },
+      "required": [
+        "subject_group_name"
+      ],
+      "type": "object",
+      "title": "Get Subject Group Observations from EarthRanger"
+    },
     "groupers": {
       "additionalProperties": false,
       "properties": {
@@ -77,36 +107,6 @@
       "type": "object",
       "required": [],
       "title": "Set Groupers for Analysis"
-    },
-    "er_client_name": {
-      "additionalProperties": false,
-      "properties": {
-        "data_source": {
-          "$ref": "#/$defs/EarthRangerConnection",
-          "title": "",
-          "description": "Select one of your configured data sources."
-        }
-      },
-      "required": [
-        "data_source"
-      ],
-      "type": "object",
-      "title": "Select EarthRanger Data Source"
-    },
-    "normalize_obs_details_stevens": {
-      "additionalProperties": false,
-      "properties": {
-        "sort_columns": {
-          "default": true,
-          "title": "Sort Columns",
-          "type": "boolean",
-          "description": "Sort new columns alphabetically.",
-          "ecoscope:advanced": true
-        }
-      },
-      "required": [],
-      "type": "object",
-      "title": "Normalize Observation Details"
     },
     "persist_stevens_observations": {
       "additionalProperties": false,
@@ -134,13 +134,6 @@
           "type": "string",
           "description": "            Optional filename prefix to persist text to within the `root_path`.\n            We will always add a suffix based on the dataframe content hash to avoid duplicates.\n            ",
           "ecoscope:advanced": true
-        },
-        "sanitize": {
-          "default": false,
-          "title": "Sanitize",
-          "type": "boolean",
-          "description": "Whether to sanitize the dataframe for Arrow compatibility before persisting, recommended when including event or observation details",
-          "ecoscope:advanced": true
         }
       },
       "required": [],
@@ -155,13 +148,6 @@
           "title": "Filename Prefix",
           "type": "string",
           "description": "            Optional filename prefix to persist text to within the `root_path`.\n            We will always add a suffix based on the dataframe content hash to avoid duplicates.\n            ",
-          "ecoscope:advanced": true
-        },
-        "sanitize": {
-          "default": false,
-          "title": "Sanitize",
-          "type": "boolean",
-          "description": "Whether to sanitize the dataframe for Arrow compatibility before persisting, recommended when including event or observation details",
           "ecoscope:advanced": true
         }
       },
@@ -197,6 +183,19 @@
         "utc"
       ],
       "title": "TimezoneInfo",
+      "type": "object"
+    },
+    "EarthRangerConnection": {
+      "properties": {
+        "name": {
+          "title": "Data Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "EarthRangerConnection",
       "type": "object"
     },
     "TemporalGrouper": {
@@ -241,19 +240,6 @@
       "oneOf": [],
       "title": "Category",
       "type": "string"
-    },
-    "EarthRangerConnection": {
-      "properties": {
-        "name": {
-          "title": "Data Source",
-          "type": "string"
-        }
-      },
-      "required": [
-        "name"
-      ],
-      "title": "EarthRangerConnection",
-      "type": "object"
     }
   },
   "uiSchema": {
@@ -273,22 +259,15 @@
     "persist_stevens_observations": {
       "ui:order": [
         "filetypes",
-        "filename_prefix",
-        "sanitize"
-      ]
-    },
-    "persist_daily_summary_stevens": {
-      "ui:order": [
-        "filename_prefix",
-        "sanitize"
+        "filename_prefix"
       ]
     },
     "ui:order": [
       "workflow_details",
       "time_range",
-      "groupers",
       "er_client_name",
-      "normalize_obs_details_stevens",
+      "subject_obs_stevens",
+      "groupers",
       "persist_stevens_observations",
       "persist_daily_summary_stevens"
     ]

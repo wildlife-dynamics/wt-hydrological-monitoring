@@ -85,15 +85,6 @@ def main(params: Params):
         .call()
     )
 
-    groupers = (
-        set_groupers.validate()
-        .set_task_instance_id("groupers")
-        .handle_errors()
-        .with_tracing()
-        .partial(**(params_dict.get("groupers") or {}))
-        .call()
-    )
-
     er_client_name = (
         set_er_connection.validate()
         .set_task_instance_id("er_client_name")
@@ -114,9 +105,17 @@ def main(params: Params):
             raise_on_empty=True,
             include_details=True,
             include_subjectsource_details=True,
-            subject_group_name="Stevens Connect",
             **(params_dict.get("subject_obs_stevens") or {}),
         )
+        .call()
+    )
+
+    groupers = (
+        set_groupers.validate()
+        .set_task_instance_id("groupers")
+        .handle_errors()
+        .with_tracing()
+        .partial(**(params_dict.get("groupers") or {}))
         .call()
     )
 
@@ -182,6 +181,7 @@ def main(params: Params):
             df=convert_to_user_timezone_stevens,
             column="observation_details",
             skip_if_not_exists=False,
+            sort_columns=True,
             **(params_dict.get("normalize_obs_details_stevens") or {}),
         )
         .call()
@@ -252,6 +252,7 @@ def main(params: Params):
         .with_tracing()
         .partial(
             root_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+            sanitize=True,
             **(params_dict.get("persist_stevens_observations") or {}),
         )
         .mapvalues(argnames=["df"], argvalues=split_river_groups)
@@ -303,6 +304,7 @@ def main(params: Params):
         .partial(
             root_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
             filetypes=["csv"],
+            sanitize=True,
             **(params_dict.get("persist_daily_summary_stevens") or {}),
         )
         .mapvalues(argnames=["df"], argvalues=daily_river)

@@ -132,29 +132,6 @@ get_timezone = (
 
 
 # %% [markdown]
-# ## Set Groupers for Analysis
-
-# %%
-# parameters
-
-groupers_params = dict(
-    groupers=...,
-)
-
-# %%
-# call the task
-
-
-groupers = (
-    set_groupers.set_task_instance_id("groupers")
-    .handle_errors()
-    .with_tracing()
-    .partial(**groupers_params)
-    .call()
-)
-
-
-# %% [markdown]
 # ## Select EarthRanger Data Source
 
 # %%
@@ -183,7 +160,9 @@ er_client_name = (
 # %%
 # parameters
 
-subject_obs_stevens_params = dict()
+subject_obs_stevens_params = dict(
+    subject_group_name=...,
+)
 
 # %%
 # call the task
@@ -199,9 +178,31 @@ subject_obs_stevens = (
         raise_on_empty=True,
         include_details=True,
         include_subjectsource_details=True,
-        subject_group_name="Stevens Connect",
         **subject_obs_stevens_params,
     )
+    .call()
+)
+
+
+# %% [markdown]
+# ## Set Groupers for Analysis
+
+# %%
+# parameters
+
+groupers_params = dict(
+    groupers=...,
+)
+
+# %%
+# call the task
+
+
+groupers = (
+    set_groupers.set_task_instance_id("groupers")
+    .handle_errors()
+    .with_tracing()
+    .partial(**groupers_params)
     .call()
 )
 
@@ -301,9 +302,7 @@ convert_to_user_timezone_stevens = (
 # %%
 # parameters
 
-normalize_obs_details_stevens_params = dict(
-    sort_columns=...,
-)
+normalize_obs_details_stevens_params = dict()
 
 # %%
 # call the task
@@ -317,6 +316,7 @@ normalize_obs_details_stevens = (
         df=convert_to_user_timezone_stevens,
         column="observation_details",
         skip_if_not_exists=False,
+        sort_columns=True,
         **normalize_obs_details_stevens_params,
     )
     .call()
@@ -435,7 +435,6 @@ persist_stevens_observations_params = dict(
     filename=...,
     filetypes=...,
     filename_prefix=...,
-    sanitize=...,
 )
 
 # %%
@@ -448,6 +447,7 @@ persist_stevens_observations = (
     .with_tracing()
     .partial(
         root_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+        sanitize=True,
         **persist_stevens_observations_params,
     )
     .mapvalues(argnames=["df"], argvalues=split_river_groups)
@@ -525,7 +525,6 @@ daily_river = (
 persist_daily_summary_stevens_params = dict(
     filename=...,
     filename_prefix=...,
-    sanitize=...,
 )
 
 # %%
@@ -539,6 +538,7 @@ persist_daily_summary_stevens = (
     .partial(
         root_path=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
         filetypes=["csv"],
+        sanitize=True,
         **persist_daily_summary_stevens_params,
     )
     .mapvalues(argnames=["df"], argvalues=daily_river)

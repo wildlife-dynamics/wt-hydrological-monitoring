@@ -1,19 +1,23 @@
-id: river_health
+id: hydrological_monitoring
 requirements:
   - name: ecoscope-workflows-core
-    version: ">=0.19.4, <0.20.0"
+    version: ">=0.20.6, <0.21"
     channel: https://repo.prefix.dev/ecoscope-workflows/
   - name: ecoscope-workflows-ext-ecoscope
-    version: ">=0.19.4, <0.20.0"
+    version: ">=0.20.6, <0.21"
     channel: https://repo.prefix.dev/ecoscope-workflows/
   - name: ecoscope-workflows-ext-custom
-    version: ">=0.0.10, <0.1.0"
+    version: ">=0.0.19, <0.1.0"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 rjsf-overrides:
   $defs:
     ValueGrouper.oneOf: [
       {"const": "weather_station", "title": "Weather Station"},
     ]
+
+  properties:
+    persist_stevens_observations.properties.filename_prefix.default: "observations"
+    persist_daily_summary_stevens.properties.filename_prefix.default: "daily_summary"
 
 
 workflow:
@@ -33,10 +37,6 @@ workflow:
     partial:
       time_range: ${{ workflow.time_range.return }}
 
-  - name: Set Groupers for Analysis
-    id: groupers
-    task: set_groupers
-
   - name: Select EarthRanger Data Source
     id: er_client_name
     task: set_er_connection
@@ -50,7 +50,10 @@ workflow:
       raise_on_empty: true
       include_details: true
       include_subjectsource_details: true
-      subject_group_name: "Stevens Connect"
+
+  - name: Set Groupers for Analysis
+    id: groupers
+    task: set_groupers
       
   - name: Remove Extra Column Prefix
     id: drop_extra_prefix_stevens
@@ -85,6 +88,7 @@ workflow:
       df: ${{ workflow.convert_to_user_timezone_stevens.return }}
       column: "observation_details"
       skip_if_not_exists: false
+      sort_columns: true
 
   - name: Remove Column Prefix Observation Details
     id: drop_obs_details_prefix_stevens
@@ -125,6 +129,7 @@ workflow:
     task: persist_df_wrapper
     partial:
       root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      sanitize: true
     mapvalues:
       argnames: df
       argvalues: ${{ workflow.split_river_groups.return }}
@@ -163,6 +168,7 @@ workflow:
     partial:
       root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
       filetypes: ["csv"]
+      sanitize: true
     mapvalues:
       argnames: df
       argvalues: ${{ workflow.daily_river.return }}

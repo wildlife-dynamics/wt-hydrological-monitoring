@@ -43,6 +43,7 @@ from ecoscope_workflows_core.tasks.transformation import map_columns as map_colu
 from ecoscope_workflows_ext_custom.tasks.io import (
     persist_df_wrapper as persist_df_wrapper,
 )
+from ecoscope_workflows_ext_custom.tasks.results import create_docx as create_docx
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     apply_sql_query as apply_sql_query,
 )
@@ -162,6 +163,7 @@ er_client_name = (
 
 subject_obs_stevens_params = dict(
     subject_group_name=...,
+    filter=...,
 )
 
 # %%
@@ -426,7 +428,7 @@ split_river_groups = (
 
 
 # %% [markdown]
-# ## Persist Observations from Stevens Connect
+# ## Persist Observations
 
 # %%
 # parameters
@@ -517,7 +519,7 @@ daily_river = (
 
 
 # %% [markdown]
-# ## Persist Daily Summary from Stevens Connect
+# ## Persist Daily Summary
 
 # %%
 # parameters
@@ -552,6 +554,7 @@ persist_daily_summary_stevens = (
 # parameters
 
 depth_chart_params = dict(
+    smoothing=...,
     widget_id=...,
 )
 
@@ -653,6 +656,7 @@ grouped_depth_widget = (
 # parameters
 
 do_chart_params = dict(
+    smoothing=...,
     widget_id=...,
 )
 
@@ -743,6 +747,51 @@ grouped_do_widget = (
     .handle_errors()
     .with_tracing()
     .partial(widgets=do_chart_widget, **grouped_do_widget_params)
+    .call()
+)
+
+
+# %% [markdown]
+# ## Create Hydrological Report
+
+# %%
+# parameters
+
+create_hydrological_report_params = dict(
+    template_path=...,
+)
+
+# %%
+# call the task
+
+
+create_hydrological_report = (
+    create_docx.set_task_instance_id("create_hydrological_report")
+    .handle_errors()
+    .with_tracing()
+    .partial(
+        context={
+            "items": [
+                {"item_type": "text", "key": "report_date", "value": "December 2025"},
+                {
+                    "item_type": "image",
+                    "key": "depth_chart",
+                    "value": persist_depth,
+                    "screenshot_config": {"wait_for_timeout": 0},
+                },
+                {
+                    "item_type": "image",
+                    "key": "do_chart",
+                    "value": persist_do,
+                    "screenshot_config": {"wait_for_timeout": 0},
+                },
+                {"item_type": "table", "key": "summary", "value": daily_river},
+            ]
+        },
+        output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+        filename_prefix="hydrological_report",
+        **create_hydrological_report_params,
+    )
     .call()
 )
 

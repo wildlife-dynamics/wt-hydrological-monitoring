@@ -75,6 +75,20 @@
           "title": "Subject Group Name",
           "type": "string",
           "description": "\u26a0\ufe0f The use of a group with mixed subtypes could lead to unexpected results"
+        },
+        "filter": {
+          "default": "clean",
+          "enum": [
+            "all",
+            "clean",
+            "manually_filtered",
+            "automatically_filtered",
+            "manually_and_automatically_filtered"
+          ],
+          "title": "Filter",
+          "type": "string",
+          "description": "Filter observations based on exclusion flags.",
+          "ecoscope:advanced": true
         }
       },
       "required": [
@@ -95,6 +109,9 @@
               },
               {
                 "$ref": "#/$defs/TemporalGrouper"
+              },
+              {
+                "$ref": "#/$defs/SpatialGrouper"
               }
             ],
             "title": "Group by"
@@ -138,7 +155,7 @@
       },
       "required": [],
       "type": "object",
-      "title": "Persist Observations from Stevens Connect"
+      "title": "Persist Observations"
     },
     "persist_daily_summary_stevens": {
       "additionalProperties": false,
@@ -153,7 +170,60 @@
       },
       "required": [],
       "type": "object",
-      "title": "Persist Daily Summary from Stevens Connect"
+      "title": "Persist Daily Summary"
+    },
+    "depth_chart": {
+      "additionalProperties": false,
+      "properties": {
+        "smoothing": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SmoothingConfig"
+            }
+          ],
+          "default": null,
+          "title": "Smoothing",
+          "description": "Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
+          "ecoscope:advanced": true
+        }
+      },
+      "required": [],
+      "type": "object",
+      "title": "Draw River Depth Chart"
+    },
+    "do_chart": {
+      "additionalProperties": false,
+      "properties": {
+        "smoothing": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/SmoothingConfig"
+            }
+          ],
+          "default": null,
+          "title": "Smoothing",
+          "description": "Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
+          "ecoscope:advanced": true
+        }
+      },
+      "required": [],
+      "type": "object",
+      "title": "Draw DO Chart"
+    },
+    "create_hydrological_report": {
+      "additionalProperties": false,
+      "properties": {
+        "template_path": {
+          "title": "Template Path",
+          "type": "string",
+          "description": "Path to the Word template (.docx) file with Jinja2 placeholders"
+        }
+      },
+      "required": [
+        "template_path"
+      ],
+      "type": "object",
+      "title": "Create Hydrological Report"
     }
   },
   "$defs": {
@@ -198,6 +268,10 @@
       "title": "EarthRangerConnection",
       "type": "object"
     },
+    "SpatialGrouper": {
+      "title": "Spatial Regions",
+      "type": "string"
+    },
     "TemporalGrouper": {
       "oneOf": [
         {
@@ -240,6 +314,51 @@
       "oneOf": [],
       "title": "Category",
       "type": "string"
+    },
+    "SmoothingConfig": {
+      "description": "Configuration for data smoothing.",
+      "properties": {
+        "method": {
+          "const": "spline",
+          "default": "spline",
+          "description": "The smoothing method to apply. Currently supports 'spline'.",
+          "enum": [
+            "spline"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "y_min": {
+          "default": null,
+          "description": "The minimum value to clamp smoothed values to. Useful for data like precipitation where values should not go below zero.",
+          "ecoscope:advanced": true,
+          "title": "Y Min",
+          "type": "number"
+        },
+        "y_max": {
+          "default": null,
+          "description": "The maximum value to clamp smoothed values to.",
+          "ecoscope:advanced": true,
+          "title": "Y Max",
+          "type": "number"
+        },
+        "resolution": {
+          "default": 10,
+          "description": "The resolution multiplier for interpolation points. The number of output points will be len(x) * resolution.",
+          "ecoscope:advanced": true,
+          "title": "Resolution",
+          "type": "integer"
+        },
+        "degree": {
+          "default": 3,
+          "description": "The degree of the spline. 1: Linear, 2: Quadratic, 3: Cubic (recommended), 4-5: Higher degree.",
+          "ecoscope:advanced": true,
+          "title": "Degree",
+          "type": "integer"
+        }
+      },
+      "title": "SmoothingConfig",
+      "type": "object"
     }
   },
   "uiSchema": {
@@ -256,6 +375,12 @@
         "timezone"
       ]
     },
+    "subject_obs_stevens": {
+      "ui:order": [
+        "subject_group_name",
+        "filter"
+      ]
+    },
     "persist_stevens_observations": {
       "ui:order": [
         "filetypes",
@@ -269,7 +394,10 @@
       "subject_obs_stevens",
       "groupers",
       "persist_stevens_observations",
-      "persist_daily_summary_stevens"
+      "persist_daily_summary_stevens",
+      "depth_chart",
+      "do_chart",
+      "create_hydrological_report"
     ]
   },
   "additionalProperties": false

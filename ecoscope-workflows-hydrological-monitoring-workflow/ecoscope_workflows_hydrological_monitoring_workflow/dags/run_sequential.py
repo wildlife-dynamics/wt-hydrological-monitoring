@@ -33,6 +33,7 @@ from ecoscope_workflows_core.tasks.transformation import map_columns as map_colu
 from ecoscope_workflows_ext_custom.tasks.io import (
     persist_df_wrapper as persist_df_wrapper,
 )
+from ecoscope_workflows_ext_custom.tasks.results import create_docx as create_docx
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     apply_sql_query as apply_sql_query,
 )
@@ -417,6 +418,41 @@ def main(params: Params):
         .with_tracing()
         .partial(
             widgets=do_chart_widget, **(params_dict.get("grouped_do_widget") or {})
+        )
+        .call()
+    )
+
+    create_hydrological_report = (
+        create_docx.validate()
+        .set_task_instance_id("create_hydrological_report")
+        .handle_errors()
+        .with_tracing()
+        .partial(
+            context={
+                "items": [
+                    {
+                        "item_type": "text",
+                        "key": "report_date",
+                        "value": "December 2025",
+                    },
+                    {
+                        "item_type": "image",
+                        "key": "depth_chart",
+                        "value": persist_depth,
+                        "screenshot_config": {"wait_for_timeout": 0},
+                    },
+                    {
+                        "item_type": "image",
+                        "key": "do_chart",
+                        "value": persist_do,
+                        "screenshot_config": {"wait_for_timeout": 0},
+                    },
+                    {"item_type": "table", "key": "summary", "value": daily_river},
+                ]
+            },
+            output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+            filename_prefix="hydrological_report",
+            **(params_dict.get("create_hydrological_report") or {}),
         )
         .call()
     )

@@ -124,7 +124,7 @@ workflow:
       df: ${{ workflow.df_with_temporal_index.return }}
       groupers: ${{ workflow.groupers.return }}
 
-  - name: Persist Observations from Stevens Connect
+  - name: Persist Observations
     id: persist_stevens_observations
     task: persist_df_wrapper
     partial:
@@ -162,7 +162,7 @@ workflow:
       argnames: df
       argvalues: ${{ workflow.extract_river_values.return }}
 
-  - name: Persist Daily Summary from Stevens Connect
+  - name: Persist Daily Summary
     id: persist_daily_summary_stevens
     task: persist_df_wrapper
     partial:
@@ -260,6 +260,31 @@ workflow:
     partial:
       widgets: ${{ workflow.do_chart_widget.return }}
       
+  - name: Create Hydrological Report
+    id: create_hydrological_report
+    task: create_docx
+    partial:
+      context:
+        items:
+          - item_type: text
+            key: report_date
+            value: "December 2025" # todo: from time_range 
+          - item_type: image
+            key: depth_chart
+            value: ${{ workflow.persist_depth.return }}
+            screenshot_config:
+              wait_for_timeout: 0
+          - item_type: image
+            key: do_chart 
+            value: ${{ workflow.persist_do.return }}
+            screenshot_config:
+              wait_for_timeout: 0
+          - item_type: table
+            key: summary
+            value: ${{ workflow.daily_river.return }}
+      output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      filename_prefix: hydrological_report
+
   - name: Create A Weather Dashboard
     id: weather_dashboard
     task: gather_dashboard

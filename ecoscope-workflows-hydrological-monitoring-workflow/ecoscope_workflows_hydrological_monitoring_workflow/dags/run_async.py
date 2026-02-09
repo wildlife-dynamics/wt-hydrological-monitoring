@@ -34,6 +34,7 @@ from ecoscope_workflows_core.tasks.transformation import map_columns as map_colu
 from ecoscope_workflows_ext_custom.tasks.io import (
     persist_df_wrapper as persist_df_wrapper,
 )
+from ecoscope_workflows_ext_custom.tasks.results import create_docx as create_docx
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     apply_sql_query as apply_sql_query,
 )
@@ -84,6 +85,7 @@ def main(params: Params):
         "persist_do": ["do_chart"],
         "do_chart_widget": ["persist_do"],
         "grouped_do_widget": ["do_chart_widget"],
+        "create_hydrological_report": ["persist_depth", "persist_do", "daily_river"],
         "weather_dashboard": [
             "workflow_details",
             "grouped_depth_widget",
@@ -529,6 +531,49 @@ def main(params: Params):
                 "widgets": DependsOn("do_chart_widget"),
             }
             | (params_dict.get("grouped_do_widget") or {}),
+            method="call",
+        ),
+        "create_hydrological_report": Node(
+            async_task=create_docx.validate()
+            .set_task_instance_id("create_hydrological_report")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial={
+                "context": {
+                    "items": [
+                        {
+                            "item_type": "text",
+                            "key": "report_date",
+                            "value": "December 2025",
+                        },
+                        {
+                            "item_type": "image",
+                            "key": "depth_chart",
+                            "value": DependsOn("persist_depth"),
+                            "screenshot_config": {
+                                "wait_for_timeout": 0,
+                            },
+                        },
+                        {
+                            "item_type": "image",
+                            "key": "do_chart",
+                            "value": DependsOn("persist_do"),
+                            "screenshot_config": {
+                                "wait_for_timeout": 0,
+                            },
+                        },
+                        {
+                            "item_type": "table",
+                            "key": "summary",
+                            "value": DependsOn("daily_river"),
+                        },
+                    ],
+                },
+                "output_dir": os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+                "filename_prefix": "hydrological_report",
+            }
+            | (params_dict.get("create_hydrological_report") or {}),
             method="call",
         ),
         "weather_dashboard": Node(

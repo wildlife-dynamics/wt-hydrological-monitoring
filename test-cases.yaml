@@ -16,4 +16,6 @@ month-grouper:
         - "%B"
     subject_obs_stevens:
       subject_group_name: "Stevens Connect"
+    create_hydrological_report:
+      template_path: /Users/yunwu/MEP/wt/wt-hydrological-monitoring/resources/templates/hydrology_template.docx # todo: use github link
 

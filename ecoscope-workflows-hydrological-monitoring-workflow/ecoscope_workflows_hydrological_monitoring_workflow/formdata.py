@@ -60,6 +60,17 @@ class PersistDailySummaryStevens(BaseModel):
     )
 
 
+class CreateHydrologicalReport(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    template_path: str = Field(
+        ...,
+        description="Path or URL to the Word template (.docx) file with Jinja2 placeholders. Supports local paths and remote URLs (http://, https://).",
+        title="Template Path",
+    )
+
+
 class TimezoneInfo(BaseModel):
     label: str = Field(..., title="Label")
     tzCode: str = Field(..., title="Tzcode")
@@ -115,10 +126,6 @@ class SmoothingConfig(BaseModel):
     )
 
 
-class AllGrouper(BaseModel):
-    index_name: Optional[str] = Field("All", title="Index Name")
-
-
 class TimeRange(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -169,24 +176,6 @@ class DoChart(BaseModel):
         None,
         description="Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
         title="Smoothing",
-    )
-
-
-class CreateHydrologicalReport(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    template_path: str = Field(
-        ...,
-        description="Path or URL to the Word template (.docx) file with Jinja2 placeholders. Supports local paths and remote URLs (http://, https://).",
-        title="Template Path",
-    )
-    groupers: Optional[
-        Union[AllGrouper, List[Union[ValueGrouper, TemporalGrouper, SpatialGrouper]]]
-    ] = Field(
-        None,
-        description="            Optional groupers for sorting grouped items. When provided, grouped items\n            are sorted using the grouper's sort_key (e.g., months in calendar order).\n            If not provided, items are sorted alphabetically by filter string.\n            ",
-        title="Groupers",
     )
 
 

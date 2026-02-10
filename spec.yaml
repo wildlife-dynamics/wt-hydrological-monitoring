@@ -283,6 +283,7 @@ workflow:
           - item_type: table
             key: summary
             value: ${{ workflow.daily_river.return }}
+      groupers: ${{ workflow.groupers.return }}
       output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
       filename_prefix: hydrological_report
 

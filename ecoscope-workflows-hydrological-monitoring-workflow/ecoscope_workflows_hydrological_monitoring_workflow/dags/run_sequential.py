@@ -451,6 +451,7 @@ def main(params: Params):
                     {"item_type": "table", "key": "summary", "value": daily_river},
                 ]
             },
+            groupers=groupers,
             output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
             filename_prefix="hydrological_report",
             **(params_dict.get("create_hydrological_report") or {}),

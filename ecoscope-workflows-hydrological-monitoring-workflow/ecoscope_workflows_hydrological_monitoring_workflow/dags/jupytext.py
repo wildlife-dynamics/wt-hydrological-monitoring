@@ -759,7 +759,6 @@ grouped_do_widget = (
 
 create_hydrological_report_params = dict(
     template_path=...,
-    groupers=...,
 )
 
 # %%
@@ -789,6 +788,7 @@ create_hydrological_report = (
                 {"item_type": "table", "key": "summary", "value": daily_river},
             ]
         },
+        groupers=groupers,
         output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
         filename_prefix="hydrological_report",
         **create_hydrological_report_params,

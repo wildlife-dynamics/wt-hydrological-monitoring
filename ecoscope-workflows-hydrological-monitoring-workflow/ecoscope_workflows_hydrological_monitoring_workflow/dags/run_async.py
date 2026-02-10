@@ -90,6 +90,7 @@ def main(params: Params):
             "persist_depth",
             "persist_do",
             "daily_river",
+            "groupers",
         ],
         "weather_dashboard": [
             "workflow_details",
@@ -576,6 +577,7 @@ def main(params: Params):
                         },
                     ],
                 },
+                "groupers": DependsOn("groupers"),
                 "output_dir": os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
                 "filename_prefix": "hydrological_report",
             }

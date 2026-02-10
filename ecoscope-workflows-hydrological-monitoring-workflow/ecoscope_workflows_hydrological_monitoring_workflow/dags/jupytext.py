@@ -163,7 +163,6 @@ er_client_name = (
 
 subject_obs_stevens_params = dict(
     subject_group_name=...,
-    filter=...,
 )
 
 # %%
@@ -180,6 +179,7 @@ subject_obs_stevens = (
         raise_on_empty=True,
         include_details=True,
         include_subjectsource_details=True,
+        filter="none",
         **subject_obs_stevens_params,
     )
     .call()
@@ -759,6 +759,7 @@ grouped_do_widget = (
 
 create_hydrological_report_params = dict(
     template_path=...,
+    groupers=...,
 )
 
 # %%
@@ -772,7 +773,7 @@ create_hydrological_report = (
     .partial(
         context={
             "items": [
-                {"item_type": "text", "key": "report_date", "value": "December 2025"},
+                {"item_type": "timerange", "key": "report_date", "value": time_range},
                 {
                     "item_type": "image",
                     "key": "depth_chart",

@@ -106,6 +106,7 @@ def main(params: Params):
             raise_on_empty=True,
             include_details=True,
             include_subjectsource_details=True,
+            filter="none",
             **(params_dict.get("subject_obs_stevens") or {}),
         )
         .call()
@@ -431,9 +432,9 @@ def main(params: Params):
             context={
                 "items": [
                     {
-                        "item_type": "text",
+                        "item_type": "timerange",
                         "key": "report_date",
-                        "value": "December 2025",
+                        "value": time_range,
                     },
                     {
                         "item_type": "image",

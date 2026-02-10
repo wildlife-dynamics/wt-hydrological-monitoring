@@ -50,6 +50,7 @@ workflow:
       raise_on_empty: true
       include_details: true
       include_subjectsource_details: true
+      filter: none
 
   - name: Set Groupers for Analysis
     id: groupers
@@ -266,9 +267,9 @@ workflow:
     partial:
       context:
         items:
-          - item_type: text
+          - item_type: timerange
             key: report_date
-            value: "December 2025" # todo: from time_range 
+            value: ${{ workflow.time_range.return }}
           - item_type: image
             key: depth_chart
             value: ${{ workflow.persist_depth.return }}

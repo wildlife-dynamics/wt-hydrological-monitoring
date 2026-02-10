@@ -18,14 +18,6 @@ class WorkflowDetails(BaseModel):
     description: Optional[str] = Field("", title="Workflow Description")
 
 
-class Filter(str, Enum):
-    all = "all"
-    clean = "clean"
-    manually_filtered = "manually_filtered"
-    automatically_filtered = "automatically_filtered"
-    manually_and_automatically_filtered = "manually_and_automatically_filtered"
-
-
 class SubjectObsStevens(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -34,11 +26,6 @@ class SubjectObsStevens(BaseModel):
         ...,
         description="⚠️ The use of a group with mixed subtypes could lead to unexpected results",
         title="Subject Group Name",
-    )
-    filter: Optional[Filter] = Field(
-        "clean",
-        description="Filter observations based on exclusion flags.",
-        title="Filter",
     )
 
 
@@ -70,17 +57,6 @@ class PersistDailySummaryStevens(BaseModel):
         None,
         description="            Optional filename prefix to persist text to within the `root_path`.\n            We will always add a suffix based on the dataframe content hash to avoid duplicates.\n            ",
         title="Filename Prefix",
-    )
-
-
-class CreateHydrologicalReport(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    template_path: str = Field(
-        ...,
-        description="Path to the Word template (.docx) file with Jinja2 placeholders",
-        title="Template Path",
     )
 
 
@@ -139,6 +115,10 @@ class SmoothingConfig(BaseModel):
     )
 
 
+class AllGrouper(BaseModel):
+    index_name: Optional[str] = Field("All", title="Index Name")
+
+
 class TimeRange(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -189,6 +169,24 @@ class DoChart(BaseModel):
         None,
         description="Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
         title="Smoothing",
+    )
+
+
+class CreateHydrologicalReport(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    template_path: str = Field(
+        ...,
+        description="Path or URL to the Word template (.docx) file with Jinja2 placeholders. Supports local paths and remote URLs (http://, https://).",
+        title="Template Path",
+    )
+    groupers: Optional[
+        Union[AllGrouper, List[Union[ValueGrouper, TemporalGrouper, SpatialGrouper]]]
+    ] = Field(
+        None,
+        description="            Optional groupers for sorting grouped items. When provided, grouped items\n            are sorted using the grouper's sort_key (e.g., months in calendar order).\n            If not provided, items are sorted alphabetically by filter string.\n            ",
+        title="Groupers",
     )
 
 

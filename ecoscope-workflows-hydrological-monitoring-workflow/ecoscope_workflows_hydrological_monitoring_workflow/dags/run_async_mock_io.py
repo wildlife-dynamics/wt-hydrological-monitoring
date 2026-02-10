@@ -99,7 +99,12 @@ def main(params: Params):
         "persist_do": ["do_chart"],
         "do_chart_widget": ["persist_do"],
         "grouped_do_widget": ["do_chart_widget"],
-        "create_hydrological_report": ["persist_depth", "persist_do", "daily_river"],
+        "create_hydrological_report": [
+            "time_range",
+            "persist_depth",
+            "persist_do",
+            "daily_river",
+        ],
         "weather_dashboard": [
             "workflow_details",
             "grouped_depth_widget",
@@ -164,6 +169,7 @@ def main(params: Params):
                 "raise_on_empty": True,
                 "include_details": True,
                 "include_subjectsource_details": True,
+                "filter": "none",
             }
             | (params_dict.get("subject_obs_stevens") or {}),
             method="call",
@@ -557,9 +563,9 @@ def main(params: Params):
                 "context": {
                     "items": [
                         {
-                            "item_type": "text",
+                            "item_type": "timerange",
                             "key": "report_date",
-                            "value": "December 2025",
+                            "value": DependsOn("time_range"),
                         },
                         {
                             "item_type": "image",

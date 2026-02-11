@@ -266,6 +266,7 @@ process_columns_stevens = (
             "subject__name",
         ],
         rename_columns={"subject__name": "sensor"},
+        raise_if_not_found=False,
         **process_columns_stevens_params,
     )
     .call()
@@ -554,7 +555,6 @@ persist_daily_summary_stevens = (
 # parameters
 
 depth_chart_params = dict(
-    smoothing=...,
     widget_id=...,
 )
 
@@ -577,6 +577,7 @@ depth_chart = (
             "hovermode": "closest",
         },
         category_column="",
+        smoothing=None,
         **depth_chart_params,
     )
     .mapvalues(argnames=["dataframe"], argvalues=daily_river)
@@ -656,7 +657,6 @@ grouped_depth_widget = (
 # parameters
 
 do_chart_params = dict(
-    smoothing=...,
     widget_id=...,
 )
 
@@ -679,6 +679,7 @@ do_chart = (
             "hovermode": "closest",
         },
         category_column="",
+        smoothing=None,
         **do_chart_params,
     )
     .mapvalues(argnames=["dataframe"], argvalues=daily_river)

@@ -158,51 +158,14 @@
       "type": "object",
       "title": "Persist Daily Summary"
     },
-    "depth_chart": {
-      "additionalProperties": false,
-      "properties": {
-        "smoothing": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/SmoothingConfig"
-            }
-          ],
-          "default": null,
-          "title": "Smoothing",
-          "description": "Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
-          "ecoscope:advanced": true
-        }
-      },
-      "required": [],
-      "type": "object",
-      "title": "Draw River Depth Chart"
-    },
-    "do_chart": {
-      "additionalProperties": false,
-      "properties": {
-        "smoothing": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/SmoothingConfig"
-            }
-          ],
-          "default": null,
-          "title": "Smoothing",
-          "description": "Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
-          "ecoscope:advanced": true
-        }
-      },
-      "required": [],
-      "type": "object",
-      "title": "Draw DO Chart"
-    },
     "create_hydrological_report": {
       "additionalProperties": false,
       "properties": {
         "template_path": {
           "title": "Template Path",
           "type": "string",
-          "description": "Path or URL to the Word template (.docx) file with Jinja2 placeholders. Supports local paths and remote URLs (http://, https://)."
+          "description": "Path or URL to the Word template (.docx) file with Jinja2 placeholders. Supports local paths and remote URLs (http://, https://).",
+          "default": "https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx"
         }
       },
       "required": [
@@ -305,51 +268,6 @@
       ],
       "title": "Category",
       "type": "string"
-    },
-    "SmoothingConfig": {
-      "description": "Configuration for data smoothing.",
-      "properties": {
-        "method": {
-          "const": "spline",
-          "default": "spline",
-          "description": "The smoothing method to apply. Currently supports 'spline'.",
-          "enum": [
-            "spline"
-          ],
-          "title": "Method",
-          "type": "string"
-        },
-        "y_min": {
-          "default": null,
-          "description": "The minimum value to clamp smoothed values to. Useful for data like precipitation where values should not go below zero.",
-          "ecoscope:advanced": true,
-          "title": "Y Min",
-          "type": "number"
-        },
-        "y_max": {
-          "default": null,
-          "description": "The maximum value to clamp smoothed values to.",
-          "ecoscope:advanced": true,
-          "title": "Y Max",
-          "type": "number"
-        },
-        "resolution": {
-          "default": 10,
-          "description": "The resolution multiplier for interpolation points. The number of output points will be len(x) * resolution.",
-          "ecoscope:advanced": true,
-          "title": "Resolution",
-          "type": "integer"
-        },
-        "degree": {
-          "default": 3,
-          "description": "The degree of the spline. 1: Linear, 2: Quadratic, 3: Cubic (recommended), 4-5: Higher degree.",
-          "ecoscope:advanced": true,
-          "title": "Degree",
-          "type": "integer"
-        }
-      },
-      "title": "SmoothingConfig",
-      "type": "object"
     }
   },
   "uiSchema": {
@@ -380,8 +298,6 @@
       "groupers",
       "persist_stevens_observations",
       "persist_daily_summary_stevens",
-      "depth_chart",
-      "do_chart",
       "create_hydrological_report"
     ]
   },

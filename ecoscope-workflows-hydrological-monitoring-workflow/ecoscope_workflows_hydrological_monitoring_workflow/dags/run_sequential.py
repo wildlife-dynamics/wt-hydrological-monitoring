@@ -155,6 +155,7 @@ def main(params: Params):
                 "subject__name",
             ],
             rename_columns={"subject__name": "sensor"},
+            raise_if_not_found=False,
             **(params_dict.get("process_columns_stevens") or {}),
         )
         .call()
@@ -328,6 +329,7 @@ def main(params: Params):
                 "hovermode": "closest",
             },
             category_column="",
+            smoothing=None,
             **(params_dict.get("depth_chart") or {}),
         )
         .mapvalues(argnames=["dataframe"], argvalues=daily_river)
@@ -384,6 +386,7 @@ def main(params: Params):
                 "hovermode": "closest",
             },
             category_column="",
+            smoothing=None,
             **(params_dict.get("do_chart") or {}),
         )
         .mapvalues(argnames=["dataframe"], argvalues=daily_river)

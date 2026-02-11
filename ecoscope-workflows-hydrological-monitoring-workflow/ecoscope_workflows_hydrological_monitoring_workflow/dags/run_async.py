@@ -206,6 +206,7 @@ def main(params: Params):
                 "rename_columns": {
                     "subject__name": "sensor",
                 },
+                "raise_if_not_found": False,
             }
             | (params_dict.get("process_columns_stevens") or {}),
             method="call",
@@ -413,6 +414,7 @@ def main(params: Params):
                     "hovermode": "closest",
                 },
                 "category_column": "",
+                "smoothing": None,
             }
             | (params_dict.get("depth_chart") or {}),
             method="mapvalues",
@@ -488,6 +490,7 @@ def main(params: Params):
                     "hovermode": "closest",
                 },
                 "category_column": "",
+                "smoothing": None,
             }
             | (params_dict.get("do_chart") or {}),
             method="mapvalues",

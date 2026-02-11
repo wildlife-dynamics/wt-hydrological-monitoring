@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import Enum
-from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
@@ -100,38 +99,6 @@ class ValueGrouper(RootModel[str]):
     root: str = Field(..., title="Category")
 
 
-class Method(str, Enum):
-    spline = "spline"
-
-
-class SmoothingConfig(BaseModel):
-    method: Literal["spline"] = Field(
-        "spline",
-        description="The smoothing method to apply. Currently supports 'spline'.",
-        title="Method",
-    )
-    y_min: float | None = Field(
-        None,
-        description="The minimum value to clamp smoothed values to. Useful for data like precipitation where values should not go below zero.",
-        title="Y Min",
-    )
-    y_max: float | None = Field(
-        None,
-        description="The maximum value to clamp smoothed values to.",
-        title="Y Max",
-    )
-    resolution: int | None = Field(
-        10,
-        description="The resolution multiplier for interpolation points. The number of output points will be len(x) * resolution.",
-        title="Resolution",
-    )
-    degree: int | None = Field(
-        3,
-        description="The degree of the spline. 1: Linear, 2: Quadratic, 3: Cubic (recommended), 4-5: Higher degree.",
-        title="Degree",
-    )
-
-
 class TimeRange(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -161,28 +128,6 @@ class Groupers(BaseModel):
     )
 
 
-class DepthChart(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    smoothing: SmoothingConfig | None = Field(
-        None,
-        description="Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
-        title="Smoothing",
-    )
-
-
-class DoChart(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    smoothing: SmoothingConfig | None = Field(
-        None,
-        description="Configuration for line smoothing. When set, creates a smoothed line with original data point markers.",
-        title="Smoothing",
-    )
-
-
 class Params(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -208,8 +153,6 @@ class Params(BaseModel):
     persist_daily_summary_stevens: PersistDailySummaryStevens | None = Field(
         None, title="Persist Daily Summary"
     )
-    depth_chart: DepthChart | None = Field(None, title="Draw River Depth Chart")
-    do_chart: DoChart | None = Field(None, title="Draw DO Chart")
     create_hydrological_report: CreateHydrologicalReport | None = Field(
         None, title="Create Hydrological Report"
     )

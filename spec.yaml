@@ -18,6 +18,7 @@ rjsf-overrides:
   properties:
     persist_stevens_observations.properties.filename_prefix.default: "observations"
     persist_daily_summary_stevens.properties.filename_prefix.default: "daily_summary"
+    create_hydrological_report.properties.template_path.default: "https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx"
 
 
 workflow:
@@ -73,6 +74,7 @@ workflow:
       retain_columns: ["id", "subject_id", "created_at", "recorded_at", "source", "device_status_properties", "observation_details", "geometry", "subject__name"]
       rename_columns:
         subject__name: "sensor"
+      raise_if_not_found: false
 
   - name: "Convert to timezone"
     id: convert_to_user_timezone_stevens

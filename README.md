@@ -10,6 +10,7 @@ This workflow helps you to monitor river health and water quality to understand 
 - Calculates daily summaries (average depth and average dissolved oxygen)
 - Exports data in multiple formats (CSV, GeoParquet, GPKG)
 - Creates interactive charts showing depth and dissolved oxygen trends over time
+- Generates a downloadable Hydrological Report (Word document) with charts and data summary
 
 **Who should use this:**
 - Conservation managers monitoring river health in protected areas
@@ -80,11 +81,12 @@ Choose which subject group contains your Stevens Connect sensors.
   - Note: Using a group with mixed subtypes could lead to unexpected results
 
 #### 5. Group Data (Optional)
-Organize your data into separate views based on time periods.
+Organize your data into separate views based on time periods or spatial regions.
 
 - **Group by**: Create separate outputs grouped by:
   - Time: Year, Month, Date, Day of week, Hour, etc.
-  - Category: Weather Station - creates separate views for each sensor
+  - Spatial Regions: Group by geographic regions (if configured)
+  - You can select multiple groupers to create nested groupings (e.g., group by month AND region)
 
 #### 6. Persist Observations
 Choose how to save your raw observation data with normalized observation details.
@@ -101,6 +103,19 @@ The workflow automatically creates a daily summary CSV file with aggregated dept
 - This file is always created and includes:
   - Average daily depth by sensor
   - Average daily dissolved oxygen by sensor
+
+#### 8. Create Hydrological Report
+Generate a downloadable Word document (.docx) containing your hydrological analysis.
+
+- **Template Path** (required): Path or URL to a Word template file with Jinja2 placeholders
+  - Default: Uses the provided template from GitHub
+  - You can provide your own customized template
+  - Supports both local file paths and remote URLs (http://, https://)
+- The report includes:
+  - Report date range
+  - Depth chart visualization
+  - Dissolved oxygen chart visualization
+  - Summary data table
 
 ### Advanced Configuration
 
@@ -193,6 +208,14 @@ The workflow creates an interactive dashboard with two main visualizations:
   - Smooth spline: Shows dissolved oxygen trends as smooth curves
   - Legend: Identifies sensor information
 
+### Hydrological Report Output
+
+The workflow generates a downloadable Word document (.docx) containing:
+- **Report date range**: Summary of the analysis period
+- **Depth chart**: Visual representation of water depth trends
+- **Dissolved oxygen chart**: Visual representation of dissolved oxygen data
+- **Summary table**: Aggregated daily hydrological data
+
 ### Grouped Outputs
 
 If you configured data grouping:
@@ -218,6 +241,7 @@ Here are some typical scenarios and how to configure the workflow for each:
 - CSV file with all raw observations from all sensors
 - Daily summary CSV with aggregated depth and dissolved oxygen
 - Interactive dashboard with depth and dissolved oxygen charts
+- Hydrological report (Word document) with charts and summary
 
 ---
 
@@ -239,6 +263,7 @@ Here are some typical scenarios and how to configure the workflow for each:
 - 12 sets of observation files (one per month)
 - 12 daily summary files (one per month)
 - Dashboard with 12 views showing depth and dissolved oxygen trends for each month
+- Hydrological report with charts and summary
 
 ---
 
@@ -257,6 +282,7 @@ Here are some typical scenarios and how to configure the workflow for each:
 - CSV file with one week of hydrological data
 - Daily summary showing 7 days of aggregated measurements
 - Dashboard charts showing weekly trends in depth and dissolved oxygen
+- Hydrological report with charts and summary
 
 ## Troubleshooting
 

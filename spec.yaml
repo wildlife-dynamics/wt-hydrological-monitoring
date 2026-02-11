@@ -1,13 +1,13 @@
 id: hydrological_monitoring
 requirements:
   - name: ecoscope-workflows-core
-    version: ">=0.20.6, <0.21"
+    version: ">=0.22.2, <0.23"
     channel: https://repo.prefix.dev/ecoscope-workflows/
   - name: ecoscope-workflows-ext-ecoscope
-    version: ">=0.20.6, <0.21"
+    version: ">=0.22.2, <0.23"
     channel: https://repo.prefix.dev/ecoscope-workflows/
   - name: ecoscope-workflows-ext-custom
-    version: ">=0.0.19, <0.1.0"
+    version: ">=0.0.26, <0.1.0"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 rjsf-overrides:
   $defs:
@@ -18,6 +18,7 @@ rjsf-overrides:
   properties:
     persist_stevens_observations.properties.filename_prefix.default: "observations"
     persist_daily_summary_stevens.properties.filename_prefix.default: "daily_summary"
+    create_hydrological_report.properties.template_path.default: "https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx"
 
 
 workflow:
@@ -50,6 +51,7 @@ workflow:
       raise_on_empty: true
       include_details: true
       include_subjectsource_details: true
+      filter: none
 
   - name: Set Groupers for Analysis
     id: groupers
@@ -72,6 +74,7 @@ workflow:
       retain_columns: ["id", "subject_id", "created_at", "recorded_at", "source", "device_status_properties", "observation_details", "geometry", "subject__name"]
       rename_columns:
         subject__name: "sensor"
+      raise_if_not_found: false
 
   - name: "Convert to timezone"
     id: convert_to_user_timezone_stevens
@@ -124,7 +127,7 @@ workflow:
       df: ${{ workflow.df_with_temporal_index.return }}
       groupers: ${{ workflow.groupers.return }}
 
-  - name: Persist Observations from Stevens Connect
+  - name: Persist Observations
     id: persist_stevens_observations
     task: persist_df_wrapper
     partial:
@@ -162,7 +165,7 @@ workflow:
       argnames: df
       argvalues: ${{ workflow.extract_river_values.return }}
 
-  - name: Persist Daily Summary from Stevens Connect
+  - name: Persist Daily Summary
     id: persist_daily_summary_stevens
     task: persist_df_wrapper
     partial:
@@ -189,6 +192,7 @@ workflow:
         legend_title: "Weather Station"
         hovermode: "closest"
       category_column: ""
+      smoothing: null
     mapvalues:
       argnames: dataframe
       argvalues: ${{ workflow.daily_river.return }}
@@ -233,6 +237,7 @@ workflow:
         legend_title: "Weather Station"
         hovermode: "closest"
       category_column: ""
+      smoothing: null
     mapvalues:
       argnames: dataframe
       argvalues: ${{ workflow.daily_river.return }}
@@ -260,6 +265,32 @@ workflow:
     partial:
       widgets: ${{ workflow.do_chart_widget.return }}
       
+  - name: Create Hydrological Report
+    id: create_hydrological_report
+    task: create_docx
+    partial:
+      context:
+        items:
+          - item_type: timerange
+            key: report_date
+            value: ${{ workflow.time_range.return }}
+          - item_type: image
+            key: depth_chart
+            value: ${{ workflow.persist_depth.return }}
+            screenshot_config:
+              wait_for_timeout: 0
+          - item_type: image
+            key: do_chart 
+            value: ${{ workflow.persist_do.return }}
+            screenshot_config:
+              wait_for_timeout: 0
+          - item_type: table
+            key: summary
+            value: ${{ workflow.daily_river.return }}
+      groupers: ${{ workflow.groupers.return }}
+      output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+      filename_prefix: hydrological_report
+
   - name: Create A Weather Dashboard
     id: weather_dashboard
     task: gather_dashboard

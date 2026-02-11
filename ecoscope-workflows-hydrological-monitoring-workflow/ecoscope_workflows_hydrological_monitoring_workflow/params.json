@@ -95,6 +95,9 @@
               },
               {
                 "$ref": "#/$defs/TemporalGrouper"
+              },
+              {
+                "$ref": "#/$defs/SpatialGrouper"
               }
             ],
             "title": "Group by"
@@ -138,7 +141,7 @@
       },
       "required": [],
       "type": "object",
-      "title": "Persist Observations from Stevens Connect"
+      "title": "Persist Observations"
     },
     "persist_daily_summary_stevens": {
       "additionalProperties": false,
@@ -153,7 +156,22 @@
       },
       "required": [],
       "type": "object",
-      "title": "Persist Daily Summary from Stevens Connect"
+      "title": "Persist Daily Summary"
+    },
+    "create_hydrological_report": {
+      "additionalProperties": false,
+      "properties": {
+        "template_path": {
+          "title": "Template Path",
+          "type": "string",
+          "description": "Path or URL to the Word template (.docx) file with Jinja2 placeholders. Supports local paths and remote URLs (http://, https://)."
+        }
+      },
+      "required": [
+        "template_path"
+      ],
+      "type": "object",
+      "title": "Create Hydrological Report"
     }
   },
   "$defs": {
@@ -197,6 +215,10 @@
       ],
       "title": "EarthRangerConnection",
       "type": "object"
+    },
+    "SpatialGrouper": {
+      "title": "Spatial Regions",
+      "type": "string"
     },
     "TemporalGrouper": {
       "oneOf": [
@@ -269,7 +291,8 @@
       "subject_obs_stevens",
       "groupers",
       "persist_stevens_observations",
-      "persist_daily_summary_stevens"
+      "persist_daily_summary_stevens",
+      "create_hydrological_report"
     ]
   },
   "additionalProperties": false

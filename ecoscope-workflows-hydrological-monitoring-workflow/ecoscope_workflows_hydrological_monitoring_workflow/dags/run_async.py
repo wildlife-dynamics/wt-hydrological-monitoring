@@ -34,6 +34,7 @@ from ecoscope_workflows_core.tasks.transformation import map_columns as map_colu
 from ecoscope_workflows_ext_custom.tasks.io import (
     persist_df_wrapper as persist_df_wrapper,
 )
+from ecoscope_workflows_ext_custom.tasks.results import create_docx as create_docx
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     apply_sql_query as apply_sql_query,
 )
@@ -84,6 +85,13 @@ def main(params: Params):
         "persist_do": ["do_chart"],
         "do_chart_widget": ["persist_do"],
         "grouped_do_widget": ["do_chart_widget"],
+        "create_hydrological_report": [
+            "time_range",
+            "persist_depth",
+            "persist_do",
+            "daily_river",
+            "groupers",
+        ],
         "weather_dashboard": [
             "workflow_details",
             "grouped_depth_widget",
@@ -148,6 +156,7 @@ def main(params: Params):
                 "raise_on_empty": True,
                 "include_details": True,
                 "include_subjectsource_details": True,
+                "filter": "none",
             }
             | (params_dict.get("subject_obs_stevens") or {}),
             method="call",
@@ -197,6 +206,7 @@ def main(params: Params):
                 "rename_columns": {
                     "subject__name": "sensor",
                 },
+                "raise_if_not_found": False,
             }
             | (params_dict.get("process_columns_stevens") or {}),
             method="call",
@@ -404,6 +414,7 @@ def main(params: Params):
                     "hovermode": "closest",
                 },
                 "category_column": "",
+                "smoothing": None,
             }
             | (params_dict.get("depth_chart") or {}),
             method="mapvalues",
@@ -479,6 +490,7 @@ def main(params: Params):
                     "hovermode": "closest",
                 },
                 "category_column": "",
+                "smoothing": None,
             }
             | (params_dict.get("do_chart") or {}),
             method="mapvalues",
@@ -529,6 +541,50 @@ def main(params: Params):
                 "widgets": DependsOn("do_chart_widget"),
             }
             | (params_dict.get("grouped_do_widget") or {}),
+            method="call",
+        ),
+        "create_hydrological_report": Node(
+            async_task=create_docx.validate()
+            .set_task_instance_id("create_hydrological_report")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial={
+                "context": {
+                    "items": [
+                        {
+                            "item_type": "timerange",
+                            "key": "report_date",
+                            "value": DependsOn("time_range"),
+                        },
+                        {
+                            "item_type": "image",
+                            "key": "depth_chart",
+                            "value": DependsOn("persist_depth"),
+                            "screenshot_config": {
+                                "wait_for_timeout": 0,
+                            },
+                        },
+                        {
+                            "item_type": "image",
+                            "key": "do_chart",
+                            "value": DependsOn("persist_do"),
+                            "screenshot_config": {
+                                "wait_for_timeout": 0,
+                            },
+                        },
+                        {
+                            "item_type": "table",
+                            "key": "summary",
+                            "value": DependsOn("daily_river"),
+                        },
+                    ],
+                },
+                "groupers": DependsOn("groupers"),
+                "output_dir": os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+                "filename_prefix": "hydrological_report",
+            }
+            | (params_dict.get("create_hydrological_report") or {}),
             method="call",
         ),
         "weather_dashboard": Node(

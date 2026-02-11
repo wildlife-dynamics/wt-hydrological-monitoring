@@ -43,6 +43,7 @@ from ecoscope_workflows_core.tasks.transformation import map_columns as map_colu
 from ecoscope_workflows_ext_custom.tasks.io import (
     persist_df_wrapper as persist_df_wrapper,
 )
+from ecoscope_workflows_ext_custom.tasks.results import create_docx as create_docx
 from ecoscope_workflows_ext_custom.tasks.transformation import (
     apply_sql_query as apply_sql_query,
 )
@@ -178,6 +179,7 @@ subject_obs_stevens = (
         raise_on_empty=True,
         include_details=True,
         include_subjectsource_details=True,
+        filter="none",
         **subject_obs_stevens_params,
     )
     .call()
@@ -264,6 +266,7 @@ process_columns_stevens = (
             "subject__name",
         ],
         rename_columns={"subject__name": "sensor"},
+        raise_if_not_found=False,
         **process_columns_stevens_params,
     )
     .call()
@@ -426,7 +429,7 @@ split_river_groups = (
 
 
 # %% [markdown]
-# ## Persist Observations from Stevens Connect
+# ## Persist Observations
 
 # %%
 # parameters
@@ -517,7 +520,7 @@ daily_river = (
 
 
 # %% [markdown]
-# ## Persist Daily Summary from Stevens Connect
+# ## Persist Daily Summary
 
 # %%
 # parameters
@@ -574,6 +577,7 @@ depth_chart = (
             "hovermode": "closest",
         },
         category_column="",
+        smoothing=None,
         **depth_chart_params,
     )
     .mapvalues(argnames=["dataframe"], argvalues=daily_river)
@@ -675,6 +679,7 @@ do_chart = (
             "hovermode": "closest",
         },
         category_column="",
+        smoothing=None,
         **do_chart_params,
     )
     .mapvalues(argnames=["dataframe"], argvalues=daily_river)
@@ -743,6 +748,52 @@ grouped_do_widget = (
     .handle_errors()
     .with_tracing()
     .partial(widgets=do_chart_widget, **grouped_do_widget_params)
+    .call()
+)
+
+
+# %% [markdown]
+# ## Create Hydrological Report
+
+# %%
+# parameters
+
+create_hydrological_report_params = dict(
+    template_path=...,
+)
+
+# %%
+# call the task
+
+
+create_hydrological_report = (
+    create_docx.set_task_instance_id("create_hydrological_report")
+    .handle_errors()
+    .with_tracing()
+    .partial(
+        context={
+            "items": [
+                {"item_type": "timerange", "key": "report_date", "value": time_range},
+                {
+                    "item_type": "image",
+                    "key": "depth_chart",
+                    "value": persist_depth,
+                    "screenshot_config": {"wait_for_timeout": 0},
+                },
+                {
+                    "item_type": "image",
+                    "key": "do_chart",
+                    "value": persist_do,
+                    "screenshot_config": {"wait_for_timeout": 0},
+                },
+                {"item_type": "table", "key": "summary", "value": daily_river},
+            ]
+        },
+        groupers=groupers,
+        output_dir=os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+        filename_prefix="hydrological_report",
+        **create_hydrological_report_params,
+    )
     .call()
 )
 

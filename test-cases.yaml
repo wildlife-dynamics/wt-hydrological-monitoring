@@ -16,4 +16,6 @@ month-grouper:
         - "%B"
     subject_obs_stevens:
       subject_group_name: "Stevens Connect"
+    create_hydrological_report:
+      template_path: https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx
 

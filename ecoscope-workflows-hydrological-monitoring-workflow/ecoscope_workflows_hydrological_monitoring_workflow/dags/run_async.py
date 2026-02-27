@@ -17,6 +17,9 @@ from ecoscope_workflows_core.tasks.io import set_er_connection as set_er_connect
 from ecoscope_workflows_core.tasks.results import (
     create_plot_widget_single_view as create_plot_widget_single_view,
 )
+from ecoscope_workflows_core.tasks.results import (
+    create_table_widget_single_view as create_table_widget_single_view,
+)
 from ecoscope_workflows_core.tasks.results import gather_dashboard as gather_dashboard
 from ecoscope_workflows_core.tasks.results import (
     merge_widget_views as merge_widget_views,
@@ -48,6 +51,7 @@ from ecoscope_workflows_ext_ecoscope.tasks.io import (
 from ecoscope_workflows_ext_ecoscope.tasks.results import (
     draw_line_chart as draw_line_chart,
 )
+from ecoscope_workflows_ext_ecoscope.tasks.results import draw_table as draw_table
 from ecoscope_workflows_ext_ecoscope.tasks.transformation import (
     normalize_json_column as normalize_json_column,
 )
@@ -77,6 +81,10 @@ def main(params: Params):
         "extract_river_values": ["split_river_groups"],
         "daily_river": ["extract_river_values"],
         "persist_daily_summary_stevens": ["daily_river"],
+        "draw_summary_table": ["daily_river"],
+        "persist_summary_table": ["draw_summary_table"],
+        "summary_table_widget": ["persist_summary_table"],
+        "grouped_summary_table_widget": ["summary_table_widget"],
         "depth_chart": ["daily_river"],
         "persist_depth": ["depth_chart"],
         "depth_chart_widget": ["persist_depth"],
@@ -89,13 +97,13 @@ def main(params: Params):
             "time_range",
             "persist_depth",
             "persist_do",
-            "daily_river",
             "groupers",
         ],
         "weather_dashboard": [
             "workflow_details",
             "grouped_depth_widget",
             "grouped_do_widget",
+            "grouped_summary_table_widget",
             "time_range",
             "groupers",
         ],
@@ -391,6 +399,63 @@ def main(params: Params):
                 "argvalues": DependsOn("daily_river"),
             },
         ),
+        "draw_summary_table": Node(
+            async_task=draw_table.validate()
+            .set_task_instance_id("draw_summary_table")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial=(params_dict.get("draw_summary_table") or {}),
+            method="mapvalues",
+            kwargs={
+                "argnames": ["dataframe"],
+                "argvalues": DependsOn("daily_river"),
+            },
+        ),
+        "persist_summary_table": Node(
+            async_task=persist_text.validate()
+            .set_task_instance_id("persist_summary_table")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial={
+                "root_path": os.environ["ECOSCOPE_WORKFLOWS_RESULTS"],
+            }
+            | (params_dict.get("persist_summary_table") or {}),
+            method="mapvalues",
+            kwargs={
+                "argnames": ["text"],
+                "argvalues": DependsOn("draw_summary_table"),
+            },
+        ),
+        "summary_table_widget": Node(
+            async_task=create_table_widget_single_view.validate()
+            .set_task_instance_id("summary_table_widget")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial={
+                "title": "Daily Summary",
+            }
+            | (params_dict.get("summary_table_widget") or {}),
+            method="map",
+            kwargs={
+                "argnames": ["view", "data"],
+                "argvalues": DependsOn("persist_summary_table"),
+            },
+        ),
+        "grouped_summary_table_widget": Node(
+            async_task=merge_widget_views.validate()
+            .set_task_instance_id("grouped_summary_table_widget")
+            .handle_errors()
+            .with_tracing()
+            .set_executor("lithops"),
+            partial={
+                "widgets": DependsOn("summary_table_widget"),
+            }
+            | (params_dict.get("grouped_summary_table_widget") or {}),
+            method="call",
+        ),
         "depth_chart": Node(
             async_task=draw_line_chart.validate()
             .set_task_instance_id("depth_chart")
@@ -573,11 +638,6 @@ def main(params: Params):
                                 "wait_for_timeout": 0,
                             },
                         },
-                        {
-                            "item_type": "table",
-                            "key": "summary",
-                            "value": DependsOn("daily_river"),
-                        },
                     ],
                 },
                 "groupers": DependsOn("groupers"),
@@ -598,6 +658,7 @@ def main(params: Params):
                 "widgets": [
                     DependsOn("grouped_depth_widget"),
                     DependsOn("grouped_do_widget"),
+                    DependsOn("grouped_summary_table_widget"),
                 ],
                 "time_range": DependsOn("time_range"),
                 "groupers": DependsOn("groupers"),

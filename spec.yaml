@@ -176,6 +176,37 @@ workflow:
       argnames: df
       argvalues: ${{ workflow.daily_river.return }}
 
+  - name: Draw Summary Table
+    id: draw_summary_table
+    task: draw_table
+    mapvalues:
+      argnames: dataframe
+      argvalues: ${{ workflow.daily_river.return }}
+
+  - name: Persist Summary Table as Text
+    id: persist_summary_table
+    task: persist_text
+    partial:
+      root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+    mapvalues:
+      argnames: text
+      argvalues: ${{ workflow.draw_summary_table.return }}
+
+  - name: Create Summary Table Widget
+    id: summary_table_widget
+    task: create_table_widget_single_view
+    partial:
+      title: "Daily Summary"
+    map:
+      argnames: [view, data]
+      argvalues: ${{ workflow.persist_summary_table.return }}
+
+  - name: Merge Summary Table Widget Views
+    id: grouped_summary_table_widget
+    task: merge_widget_views
+    partial:
+      widgets: ${{ workflow.summary_table_widget.return }}
+
   - name: Draw River Depth Chart
     id: depth_chart
     task: draw_line_chart
@@ -284,9 +315,6 @@ workflow:
             value: ${{ workflow.persist_do.return }}
             screenshot_config:
               wait_for_timeout: 0
-          - item_type: table
-            key: summary
-            value: ${{ workflow.daily_river.return }}
       groupers: ${{ workflow.groupers.return }}
       output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
       filename_prefix: hydrological_report
@@ -299,5 +327,6 @@ workflow:
       widgets:
         - ${{ workflow.grouped_depth_widget.return }}
         - ${{ workflow.grouped_do_widget.return }}
+        - ${{ workflow.grouped_summary_table_widget.return }}
       time_range: ${{ workflow.time_range.return}}
       groupers: ${{ workflow.groupers.return }}

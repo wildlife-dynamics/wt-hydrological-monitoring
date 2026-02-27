@@ -13,9 +13,10 @@ month-grouper:
       until: "2025-12-25T23:59:59Z"
     groupers:
       groupers: 
-        - "%B"
+        - temporal_index: "%B"
     subject_obs_stevens:
       subject_group_name: "Stevens Connect"
     create_hydrological_report:
-      template_path: https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx
+      # todo: update to github link before push to remote
+      template_path: /Users/yunwu/MEP/wt/wt-hydrological-monitoring/resources/templates/hydrology_template.docx
 

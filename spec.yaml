@@ -14,11 +14,15 @@ requirements:
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 rjsf-overrides:
   $defs:
-    ValueGrouper.oneOf: [
+    ValueGrouper.properties.index_name.oneOf: [
       {"const": "weather_station", "title": "Weather Station"},
     ]
 
   properties:
+    groupers.properties.groupers.items.anyOf: [
+      {"$ref": "#/$defs/ValueGrouper"},
+      {"$ref": "#/$defs/TemporalGrouper"},
+    ]
     persist_stevens_observations.properties.filename_prefix.default: "observations"
     persist_daily_summary_stevens.properties.filename_prefix.default: "daily_summary"
     create_hydrological_report.properties.template_path.default: "https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx"
@@ -182,6 +186,12 @@ workflow:
   - name: Draw Summary Table
     id: draw_summary_table
     task: draw_table
+    partial:
+      table_config:
+        enable_sorting: true
+        enable_filtering: false
+        enable_download: false
+        hide_header: false
     mapvalues:
       argnames: dataframe
       argvalues: ${{ workflow.daily_river.return }}

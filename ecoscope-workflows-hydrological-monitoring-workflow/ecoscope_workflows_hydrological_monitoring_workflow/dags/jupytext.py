@@ -560,7 +560,6 @@ persist_daily_summary_stevens = (
 
 draw_summary_table_params = dict(
     columns=...,
-    table_config=...,
     widget_id=...,
 )
 
@@ -572,7 +571,15 @@ draw_summary_table = (
     draw_table.set_task_instance_id("draw_summary_table")
     .handle_errors()
     .with_tracing()
-    .partial(**draw_summary_table_params)
+    .partial(
+        table_config={
+            "enable_sorting": True,
+            "enable_filtering": False,
+            "enable_download": False,
+            "hide_header": False,
+        },
+        **draw_summary_table_params,
+    )
     .mapvalues(argnames=["dataframe"], argvalues=daily_river)
 )
 

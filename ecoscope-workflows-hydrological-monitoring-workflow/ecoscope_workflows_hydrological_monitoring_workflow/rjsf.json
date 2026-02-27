@@ -95,9 +95,6 @@
               },
               {
                 "$ref": "#/$defs/TemporalGrouper"
-              },
-              {
-                "$ref": "#/$defs/SpatialGrouper"
               }
             ],
             "title": "Group by"
@@ -169,17 +166,6 @@
           "title": "Columns",
           "type": "array",
           "description": "The list of dataframe columns to render in the table. Leave empty to render all columns",
-          "ecoscope:advanced": true
-        },
-        "table_config": {
-          "allOf": [
-            {
-              "$ref": "#/$defs/TableConfig"
-            }
-          ],
-          "default": null,
-          "title": "Table Config",
-          "description": "Configuration options for the table.",
           "ecoscope:advanced": true
         }
       },
@@ -309,7 +295,12 @@
     "ValueGrouper": {
       "properties": {
         "index_name": {
-          "oneOf": [],
+          "oneOf": [
+            {
+              "const": "weather_station",
+              "title": "Weather Station"
+            }
+          ],
           "title": "Category",
           "type": "string"
         }
@@ -318,38 +309,6 @@
         "index_name"
       ],
       "title": "Category",
-      "type": "object",
-      "oneOf": [
-        {
-          "const": "weather_station",
-          "title": "Weather Station"
-        }
-      ]
-    },
-    "TableConfig": {
-      "properties": {
-        "enable_sorting": {
-          "default": true,
-          "title": "Enable Sorting",
-          "type": "boolean"
-        },
-        "enable_filtering": {
-          "default": false,
-          "title": "Enable Filtering",
-          "type": "boolean"
-        },
-        "enable_download": {
-          "default": false,
-          "title": "Enable Download",
-          "type": "boolean"
-        },
-        "hide_header": {
-          "default": false,
-          "title": "Hide Header",
-          "type": "boolean"
-        }
-      },
-      "title": "TableConfig",
       "type": "object"
     }
   },
@@ -371,12 +330,6 @@
       "ui:order": [
         "filetypes",
         "filename_prefix"
-      ]
-    },
-    "draw_summary_table": {
-      "ui:order": [
-        "columns",
-        "table_config"
       ]
     },
     "ui:order": [

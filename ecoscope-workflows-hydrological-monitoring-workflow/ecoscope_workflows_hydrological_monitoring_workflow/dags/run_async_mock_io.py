@@ -419,7 +419,15 @@ def main(params: Params):
             .handle_errors()
             .with_tracing()
             .set_executor("lithops"),
-            partial=(params_dict.get("draw_summary_table") or {}),
+            partial={
+                "table_config": {
+                    "enable_sorting": True,
+                    "enable_filtering": False,
+                    "enable_download": False,
+                    "hide_header": False,
+                },
+            }
+            | (params_dict.get("draw_summary_table") or {}),
             method="mapvalues",
             kwargs={
                 "argnames": ["dataframe"],

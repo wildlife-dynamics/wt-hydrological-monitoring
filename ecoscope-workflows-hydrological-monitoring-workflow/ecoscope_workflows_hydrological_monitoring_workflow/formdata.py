@@ -58,6 +58,17 @@ class PersistDailySummaryStevens(BaseModel):
     )
 
 
+class DrawSummaryTable(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    columns: list[str] | None = Field(
+        None,
+        description="The list of dataframe columns to render in the table. Leave empty to render all columns",
+        title="Columns",
+    )
+
+
 class CreateHydrologicalReport(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -99,15 +110,12 @@ class TemporalGrouper(BaseModel):
     temporal_index: TemporalIndex = Field(..., title="Time")
 
 
-class ValueGrouper(Enum):
+class IndexName(str, Enum):
     Weather_Station = "weather_station"
 
 
-class TableConfig(BaseModel):
-    enable_sorting: bool | None = Field(True, title="Enable Sorting")
-    enable_filtering: bool | None = Field(False, title="Enable Filtering")
-    enable_download: bool | None = Field(False, title="Enable Download")
-    hide_header: bool | None = Field(False, title="Hide Header")
+class ValueGrouper(BaseModel):
+    index_name: IndexName = Field(..., title="Category")
 
 
 class TimeRange(BaseModel):
@@ -132,24 +140,10 @@ class Groupers(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    groupers: list[ValueGrouper | TemporalGrouper | SpatialGrouper] | None = Field(
+    groupers: list[ValueGrouper | TemporalGrouper] | None = Field(
         None,
         description="            Specify how the data should be grouped to create the views for your dashboard.\n            This field is optional; if left blank, all the data will appear in a single view.\n            ",
         title=" ",
-    )
-
-
-class DrawSummaryTable(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-    )
-    columns: list[str] | None = Field(
-        None,
-        description="The list of dataframe columns to render in the table. Leave empty to render all columns",
-        title="Columns",
-    )
-    table_config: TableConfig | None = Field(
-        None, description="Configuration options for the table.", title="Table Config"
     )
 
 

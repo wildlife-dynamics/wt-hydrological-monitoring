@@ -322,7 +322,15 @@ def main(params: Params):
         .set_task_instance_id("draw_summary_table")
         .handle_errors()
         .with_tracing()
-        .partial(**(params_dict.get("draw_summary_table") or {}))
+        .partial(
+            table_config={
+                "enable_sorting": True,
+                "enable_filtering": False,
+                "enable_download": False,
+                "hide_header": False,
+            },
+            **(params_dict.get("draw_summary_table") or {}),
+        )
         .mapvalues(argnames=["dataframe"], argvalues=daily_river)
     )
 

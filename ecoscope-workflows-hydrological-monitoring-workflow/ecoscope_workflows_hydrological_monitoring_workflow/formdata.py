@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict, Field, RootModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class WorkflowDetails(BaseModel):
@@ -58,6 +58,17 @@ class PersistDailySummaryStevens(BaseModel):
     )
 
 
+class DrawSummaryTable(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    columns: list[str] | None = Field(
+        None,
+        description="The list of dataframe columns to render in the table. Leave empty to render all columns",
+        title="Columns",
+    )
+
+
 class CreateHydrologicalReport(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -80,23 +91,31 @@ class EarthRangerConnection(BaseModel):
     name: str = Field(..., title="Data Source")
 
 
-class SpatialGrouper(RootModel[str]):
-    root: str = Field(..., title="Spatial Regions")
+class SpatialGrouper(BaseModel):
+    spatial_index_name: str = Field(..., title="Spatial Regions")
 
 
-class TemporalGrouper(str, Enum):
-    field_Y = "%Y"
-    field_B = "%B"
-    field_Y__m = "%Y-%m"
-    field_j = "%j"
-    field_d = "%d"
-    field_A = "%A"
-    field_H = "%H"
-    field_Y__m__d = "%Y-%m-%d"
+class TemporalIndex(str, Enum):
+    Year__example__2024_ = "%Y"
+    Month__example__September_ = "%B"
+    Year_and_Month__example__2023_01_ = "%Y-%m"
+    Day_of_the_year_as_a_number__example__365_ = "%j"
+    Day_of_the_month_as_a_number__example__31_ = "%d"
+    Day_of_the_week__example__Sunday_ = "%A"
+    Hour__24_hour_clock__as_number__example__22_ = "%H"
+    Date__example__2025_01_31_ = "%Y-%m-%d"
 
 
-class ValueGrouper(str, Enum):
-    weather_station = "weather_station"
+class TemporalGrouper(BaseModel):
+    temporal_index: TemporalIndex = Field(..., title="Time")
+
+
+class IndexName(str, Enum):
+    Weather_Station = "weather_station"
+
+
+class ValueGrouper(BaseModel):
+    index_name: IndexName = Field(..., title="Category")
 
 
 class TimeRange(BaseModel):
@@ -121,7 +140,7 @@ class Groupers(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    groupers: list[ValueGrouper | TemporalGrouper | SpatialGrouper] | None = Field(
+    groupers: list[ValueGrouper | TemporalGrouper] | None = Field(
         None,
         description="            Specify how the data should be grouped to create the views for your dashboard.\n            This field is optional; if left blank, all the data will appear in a single view.\n            ",
         title=" ",
@@ -152,6 +171,9 @@ class FormData(BaseModel):
     )
     persist_daily_summary_stevens: PersistDailySummaryStevens | None = Field(
         None, title="Persist Daily Summary"
+    )
+    draw_summary_table: DrawSummaryTable | None = Field(
+        None, title="Draw Summary Table"
     )
     create_hydrological_report: CreateHydrologicalReport | None = Field(
         None, title="Create Hydrological Report"

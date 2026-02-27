@@ -7,15 +7,22 @@ requirements:
     version: ">=0.22.2, <0.23"
     channel: https://repo.prefix.dev/ecoscope-workflows/
   - name: ecoscope-workflows-ext-custom
-    version: ">=0.0.26, <0.1.0"
+    version: "*"
+    channel: file:///tmp/ecoscope-workflows-custom/release/artifacts/
+  - name: pydeck
+    version: "0.0.2"
     channel: https://repo.prefix.dev/ecoscope-workflows-custom/
 rjsf-overrides:
   $defs:
-    ValueGrouper.oneOf: [
+    ValueGrouper.properties.index_name.oneOf: [
       {"const": "weather_station", "title": "Weather Station"},
     ]
 
   properties:
+    groupers.properties.groupers.items.anyOf: [
+      {"$ref": "#/$defs/ValueGrouper"},
+      {"$ref": "#/$defs/TemporalGrouper"},
+    ]
     persist_stevens_observations.properties.filename_prefix.default: "observations"
     persist_daily_summary_stevens.properties.filename_prefix.default: "daily_summary"
     create_hydrological_report.properties.template_path.default: "https://github.com/wildlife-dynamics/wt-hydrological-monitoring/raw/refs/heads/main/resources/templates/hydrology_template.docx"
@@ -31,7 +38,7 @@ workflow:
     task: set_time_range
     partial:
       time_format: "%d %b %Y %H:%M:%S %Z"
-  
+
   - name: Extract Timezone Selection
     id: get_timezone
     task: get_timezone_from_time_range
@@ -41,7 +48,7 @@ workflow:
   - name: Select EarthRanger Data Source
     id: er_client_name
     task: set_er_connection
-    
+
   - name: Get Subject Group Observations from EarthRanger
     id: subject_obs_stevens
     task: get_subjectgroup_observations
@@ -56,7 +63,7 @@ workflow:
   - name: Set Groupers for Analysis
     id: groupers
     task: set_groupers
-      
+
   - name: Remove Extra Column Prefix
     id: drop_extra_prefix_stevens
     task: drop_column_prefix
@@ -176,6 +183,43 @@ workflow:
       argnames: df
       argvalues: ${{ workflow.daily_river.return }}
 
+  - name: Draw Summary Table
+    id: draw_summary_table
+    task: draw_table
+    partial:
+      table_config:
+        enable_sorting: true
+        enable_filtering: false
+        enable_download: false
+        hide_header: false
+    mapvalues:
+      argnames: dataframe
+      argvalues: ${{ workflow.daily_river.return }}
+
+  - name: Persist Summary Table as Text
+    id: persist_summary_table
+    task: persist_text
+    partial:
+      root_path: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
+    mapvalues:
+      argnames: text
+      argvalues: ${{ workflow.draw_summary_table.return }}
+
+  - name: Create Summary Table Widget
+    id: summary_table_widget
+    task: create_table_widget_single_view
+    partial:
+      title: "Daily Summary"
+    map:
+      argnames: [view, data]
+      argvalues: ${{ workflow.persist_summary_table.return }}
+
+  - name: Merge Summary Table Widget Views
+    id: grouped_summary_table_widget
+    task: merge_widget_views
+    partial:
+      widgets: ${{ workflow.summary_table_widget.return }}
+
   - name: Draw River Depth Chart
     id: depth_chart
     task: draw_line_chart
@@ -196,7 +240,7 @@ workflow:
     mapvalues:
       argnames: dataframe
       argvalues: ${{ workflow.daily_river.return }}
-      
+
   - name: Persist Depth Chart as Text
     id: persist_depth
     task: persist_text
@@ -205,7 +249,7 @@ workflow:
     mapvalues:
       argnames: text
       argvalues: ${{ workflow.depth_chart.return }}
-      
+
   - name: Create Depth Widget
     id: depth_chart_widget
     task: create_plot_widget_single_view
@@ -220,14 +264,14 @@ workflow:
     task: merge_widget_views
     partial:
       widgets: ${{ workflow.depth_chart_widget.return }}
-      
+
   - name: Draw DO Chart
     id: do_chart
     task: draw_line_chart
     partial:
       x_column: date
       y_column: Dissolved Oxygen (mg/L)
-      line_kwargs: 
+      line_kwargs:
         shape: "spline"
       layout_kwargs:
         xaxis:
@@ -264,7 +308,7 @@ workflow:
     task: merge_widget_views
     partial:
       widgets: ${{ workflow.do_chart_widget.return }}
-      
+
   - name: Create Hydrological Report
     id: create_hydrological_report
     task: create_docx
@@ -280,13 +324,10 @@ workflow:
             screenshot_config:
               wait_for_timeout: 0
           - item_type: image
-            key: do_chart 
+            key: do_chart
             value: ${{ workflow.persist_do.return }}
             screenshot_config:
               wait_for_timeout: 0
-          - item_type: table
-            key: summary
-            value: ${{ workflow.daily_river.return }}
       groupers: ${{ workflow.groupers.return }}
       output_dir: ${{ env.ECOSCOPE_WORKFLOWS_RESULTS }}
       filename_prefix: hydrological_report
@@ -299,5 +340,6 @@ workflow:
       widgets:
         - ${{ workflow.grouped_depth_widget.return }}
         - ${{ workflow.grouped_do_widget.return }}
+        - ${{ workflow.grouped_summary_table_widget.return }}
       time_range: ${{ workflow.time_range.return}}
       groupers: ${{ workflow.groupers.return }}

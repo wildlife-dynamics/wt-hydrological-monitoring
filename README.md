@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This workflow helps you to monitor river health and water quality to understand water resources, manage them sustainably, forecast hazards (floods, droughts), and support environmental and climate change planning. 
+This workflow helps you to monitor river health and water quality to understand water resources, manage them sustainably, forecast hazards (floods, droughts), and support environmental and climate change planning.
 
 **What this workflow does:**
 - Downloads hydrological observation data captured by **Stevens Connect** sensors from EarthRanger

@@ -50,7 +50,7 @@ jobs:
           fi
 
           echo "✅ spec.yaml validation passed"
-      
+
       - name: Validate test-cases.yaml
         run: |
           TEST_CASES_FILE="test-cases.yaml"

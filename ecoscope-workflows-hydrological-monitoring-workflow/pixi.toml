@@ -3,6 +3,7 @@
 [workspace]
 name = "ecoscope-workflows-hydrological-monitoring-workflow"
 channels = [
+    "file:///tmp/ecoscope-workflows-custom/release/artifacts/",
     "https://repo.prefix.dev/ecoscope-workflows-custom/",
     "https://repo.prefix.dev/ecoscope-workflows/",
     "conda-forge",
@@ -28,7 +29,11 @@ version = ">=0.22.2,<0.23"
 channel = "https://repo.prefix.dev/ecoscope-workflows/"
 
 [dependencies.ecoscope-workflows-ext-custom]
-version = ">=0.0.26,<0.1.0"
+version = "*"
+channel = "file:///tmp/ecoscope-workflows-custom/release/artifacts/"
+
+[dependencies.pydeck]
+version = "==0.0.2"
 channel = "https://repo.prefix.dev/ecoscope-workflows-custom/"
 
 [feature.runner.dependencies.ecoscope-workflows-runner]
@@ -125,5 +130,5 @@ solve-group = "test"
 no-default-feature = true
 
 [tasks]
-docker-build = "docker buildx build -t ecoscope-workflows-hydrological-monitoring-workflow ."
+docker-build = "mkdir -p .tmp/ecoscope-workflows/release/artifacts/\n&& cp -r /tmp/ecoscope-workflows/release/artifacts/* .tmp/ecoscope-workflows/release/artifacts/\n&& docker buildx build -t ecoscope-workflows-hydrological-monitoring-workflow .\n"
 ecoscope-workflows-hydrological-monitoring-workflow = "python -m ecoscope_workflows_hydrological_monitoring_workflow.cli"
